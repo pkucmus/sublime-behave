@@ -1,0 +1,8 @@
+[
+    {"caption": "Behave: steps", "command": "behave_steps"}
+    // {
+    //     "keys": ["ctrl+shift+p"],
+    //     "command": "show_overlay",
+    //     "args": {"overlay": "command_palette"}
+    // }
+]
