@@ -52,7 +52,7 @@ class BehaveMixin(object):
             print('Failed to parse steps!')
             sublime.status_message('Failed to parse steps!')
             self.failed_to_parse = True
-            raise e
+            raise
 
     def parse_variables(self, text):
         for i, var in enumerate(re.findall(r'(\{[\w+]+\})', text), 1):
@@ -198,8 +198,7 @@ class BehaveAutocomplete(sublime_plugin.EventListener, BehaveMixin):
 
         if len(step_text) >= len(line_text):
             return step_text.startswith(line_text)
-        else:
-            return False
+        return False
 
     def _is_gherkin_scope(self, view):
 
