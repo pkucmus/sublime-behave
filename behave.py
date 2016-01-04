@@ -31,10 +31,11 @@ class BehaveMixin(object):
                 break
 
     def get_steps(self):
+        settings = sublime.load_settings('Behave.sublime-settings')
         try:
             proc = Popen(
                 [
-                    '/home/pkucmus/.virtualenvs/behave/bin/behave',
+                    settings.get('behave_runner'),
                     '--dry-run',
                     '-f',
                     'steps',
@@ -96,9 +97,9 @@ class BehaveStepsCommand(sublime_plugin.TextCommand, BehaveMixin):
 class BehaveAutocomplete(sublime_plugin.EventListener, BehaveMixin):
 
     failed_to_parse = False
+    parsed = False
 
     def __init__(self):
-        self.index_steps()
         print('BehaveAutocomplete initialized!')
 
     def on_query_completions(self, view, prefix, locations):
@@ -138,25 +139,16 @@ class BehaveAutocomplete(sublime_plugin.EventListener, BehaveMixin):
         sublime.set_timeout(_show_auto_complete, 0)
 
     def _fill_completions(self, view, location):
-        """ Prepares completions for auto-complete list
-        :param view: `sublime.View` object
-        :type view: sublime.View
-        :param location: position of cursor in line
-        :type locations: int
-        """
         last_keyword = ''
         current_region = view.line(location)
         current_line_text = view.substr(current_region).strip()
         current_line_words = current_line_text.split()
 
-        # Don't fill completions until after first space is typed
         if ' ' not in current_line_text:
             return
 
-        # If first word is keyword, take that one
         if current_line_words and current_line_words[0].lower() in keywords:
             last_keyword = current_line_words[0].lower()
-        # Otherwise, reverse iterate through lines until keyword is found
         else:
             all_lines = view.split_by_newlines(sublime.Region(0, view.size()))
             current_index = all_lines.index(current_region)
@@ -228,3 +220,9 @@ class BehaveAutocomplete(sublime_plugin.EventListener, BehaveMixin):
         ):
             print('Refreshing BehaveAutocomplete.')
             self.index_steps()
+
+    def on_activated_async(self, view):
+        if self._is_gherkin_scope(view) and not self.parsed:
+            print('Building BehaveAutocomplete.')
+            self.index_steps()
+            self.parsed = True
